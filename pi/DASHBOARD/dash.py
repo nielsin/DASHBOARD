@@ -113,8 +113,6 @@ class Dashboard(object):
 		b = self.wind_bounding_box
 		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), start, end, fill=30, outline=None)
 
-		return mean, std
-
 	def make_test_wind_values(self, num=100):
 		speed = np.zeros(num)
 		direction = np.zeros(num)
@@ -148,9 +146,9 @@ if __name__ == '__main__':
 
 	speed, direction = d.make_test_wind_values()
 
-	m,s = d.draw_wind_std_dev(direction)
+	d.draw_wind_std_dev(direction)
 
-	d.set_wind(speed=10, direction=m)
+	d.set_wind(speed=10, direction=direction[-1])
 
 	d.draw_wind_arrow()
 
