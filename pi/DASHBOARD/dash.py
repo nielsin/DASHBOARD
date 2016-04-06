@@ -14,6 +14,9 @@ class Dashboard(object):
 	Ubuntu_M = ImageFont.truetype("fonts/Ubuntu-M.ttf", 15)
 	Ubuntu_B = ImageFont.truetype("fonts/Ubuntu-B.ttf", 15)
 
+	WIND_FONT = ImageFont.truetype("fonts/Ubuntu-B.ttf", 50)
+	MS_FONT = ImageFont.truetype("fonts/Ubuntu-R.ttf", 30)
+
 	def __init__(self):
 		self.make_empty()
 		self.clear_current_dash()
@@ -91,15 +94,25 @@ class Dashboard(object):
 			xy = ((x,y1),(x,y2))
 			draw.line(xy, fill=256, width=0)
 			
-
-		
-
 	def clear_current_dash(self):
 		self.current_dash = self.empty_dash.copy()
 
 	def set_wind(self, speed, direction):
 		self.wind_direction = direction
 		self.wind_speed = speed
+
+	def print_wind_values(self):
+		# Create draw object
+		draw = ImageDraw.Draw(self.current_dash)
+
+		# Direction
+		dir_str = u'%3.0f\u00B0' % self.wind_direction
+		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT)
+
+		# Speed
+		spd_str = u'%4.1f' % self.wind_speed
+		draw.text((400,20), spd_str, fill=256, font=self.WIND_FONT)
+		draw.text((500,40), 'm/s', fill=256, font=self.MS_FONT)
 
 	def draw_wind_arrow(self):
 
@@ -198,9 +211,11 @@ if __name__ == '__main__':
 
 	d.draw_wind_std_dev(direction)
 
-	d.set_wind(speed=10, direction=direction[-1])
+	d.set_wind(speed=speed[-1], direction=direction[-1])
 
 	d.draw_wind_arrow()
+
+	d.print_wind_values()
 	
 
 
