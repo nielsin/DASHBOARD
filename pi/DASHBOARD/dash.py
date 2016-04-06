@@ -78,6 +78,29 @@ class Dashboard(object):
 		draw.line((tl, (br[0],tl[1])), fill=256, width=0)
 		draw.line(((tl[0],br[1]), br), fill=256, width=0)
 
+		# Draw line between speed and direction
+		draw.line(((380,10),(380,75)), fill=256, width=0)
+
+		# Info text above speed and direction
+		draw.text((260,5), u'Direction', fill=256, font=self.Ubuntu_R)
+		draw.text((400,5), u'Speed', fill=256, font=self.Ubuntu_R)
+
+
+	def draw_wind_speed_history(self):
+
+		self.timespan = 300
+
+		tl = self.wind_speed_bounding_box[0]
+		br = self.wind_speed_bounding_box[1]
+
+		# Create draw object
+		draw = ImageDraw.Draw(self.current_dash)
+
+		# Write some annotation
+		text_str = 'Speed history last %s seconds' % self.timespan
+		draw.text((tl[0],tl[1]-20), text_str, fill=256, font=self.Ubuntu_R)
+		draw.text((tl[0]-40,br[1]), 'Age', fill=256, font=self.Ubuntu_R)
+
 		# Ticks
 		tick_count = 5
 		tick_size = 5
@@ -93,6 +116,10 @@ class Dashboard(object):
 			y2 = y1+tick_size
 			xy = ((x,y1),(x,y2))
 			draw.line(xy, fill=256, width=0)
+
+			text_str = str(self.timespan - (a*self.timespan/(tick_count-1)))
+
+			draw.text((x-5,y2+3), text_str, fill=256, font=self.Ubuntu_R)
 			
 	def clear_current_dash(self):
 		self.current_dash = self.empty_dash.copy()
@@ -110,7 +137,7 @@ class Dashboard(object):
 		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT)
 
 		# Speed
-		spd_str = u'%4.1f' % self.wind_speed
+		spd_str = u'%3.1f' % self.wind_speed
 		draw.text((400,20), spd_str, fill=256, font=self.WIND_FONT)
 		draw.text((500,40), 'm/s', fill=256, font=self.MS_FONT)
 
@@ -210,6 +237,8 @@ if __name__ == '__main__':
 	speed, direction = make_test_wind_values()
 
 	d.draw_wind_std_dev(direction)
+
+	d.draw_wind_speed_history()
 
 	d.set_wind(speed=speed[-1], direction=direction[-1])
 
