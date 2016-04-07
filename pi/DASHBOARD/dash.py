@@ -13,10 +13,30 @@ import numpy as np
 import random
 
 class Dashboard(object):
-	"""docstring for Dashboard"""
+	"""
+	Simple class for calculating and displaying wind data
 
-	def __init__(self, history=120):
+	Keyword arguments:
+	history 		seconds of history used in calculations
+	array_order		are new record added to the start or end of array
+						'new_last'
+						'new_first'
+	in_wind_dir		are the input wind direction values
+						'origin'
+						'heading'
+	out_wind_dir	are the output wind direction displayed as
+						'origin'
+						'heading'
+	"""
+
+	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin'):
+		# Save arguments
 		self.timespan = history
+		self.array_order = array_order
+		self.in_wind_dir = in_wind_dir
+		self.out_wind_dir = out_wind_dir
+
+		# Initialize class
 		self._make_empty()
 		self._clear_current_dash()
 
