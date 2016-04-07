@@ -31,7 +31,7 @@ class Dashboard(object):
 
 	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin'):
 		# Save arguments
-		self.timespan = history
+		self.history = history
 		self.array_order = array_order
 		self.in_wind_dir = in_wind_dir
 		self.out_wind_dir = out_wind_dir
@@ -48,10 +48,46 @@ class Dashboard(object):
 	WIND_FONT = ImageFont.truetype("fonts/Ubuntu-B.ttf", 50)
 	MS_FONT = ImageFont.truetype("fonts/Ubuntu-R.ttf", 30)
 
+	def generate(self, speed_array, direction_array, array_timespan, saveloc='wind.png'):
+		self._clear_current_dash()
+
+		self._set_wind_arrays(speed_array, direction_array, array_timespan)			# Different lengths...
+
+		self._print_wind_values()
+
+		self._draw_wind_std_dev()				
+		self._draw_wind_arrow()
+
+		self._draw_wind_speed_history()			# Not implemented
+		
+
+		print speed_array
+		print direction_array
+
+		# Save figure
+		self.current_dash.save(saveloc)
+
 	def _clear_current_dash(self):
 		self.current_dash = self.empty_dash.copy()
 
-	def _set_wind(self, speed, direction):
+	def _set_wind_arrays(self, speed, direction, timespan):
+
+		# Add clipping
+
+		# Get current values and clip arrays
+		if self.array_order == 'new_first':
+			self.current_speed = speed[0]
+			self.current_direction = direction[0]
+		else:
+			self.current_speed = speed[-1]
+			self.current_direction = direction[-1]
+
+		if self.in_wind_dir != self.out_wind_dir:
+			self.current_direction -= 180
+			if self.current_direction < 0:
+				self.current_direction += 360
+
+		self.wind_timespan = timespan
 		self.wind_direction = direction
 		self.wind_speed = speed
 
@@ -99,7 +135,7 @@ class Dashboard(object):
 
 		# Some text
 		draw.text((3,3), u'Wind', fill=256, font=self.Ubuntu_R)
-		draw.text((3,18), u'Direction', fill=256, font=self.Ubuntu_R)
+		draw.text((3,18), u'Heading', fill=256, font=self.Ubuntu_R)
 
 		# Bounding box for wind speed
 		tl = (330, 120)		# top left corner
@@ -127,12 +163,12 @@ class Dashboard(object):
 			xy = ((x,y1),(x,y2))
 			draw.line(xy, fill=256, width=0)
 
-			text_str = str(a*self.timespan/(wind_history_ticks-1))
+			text_str = str(a*self.history/(wind_history_ticks-1))
 
 			draw.text((x-5,y2+3), text_str, fill=256, font=self.Ubuntu_R)
 
 		# Write some annotation
-		text_str = 'Speed history last %s seconds' % self.timespan
+		text_str = 'Speed history last %s seconds' % self.history
 		draw.text((tl[0],tl[1]-20), text_str, fill=256, font=self.Ubuntu_R)
 		draw.text((tl[0]-40,br[1]+8), 'Age', fill=256, font=self.Ubuntu_R)
 		
@@ -140,7 +176,11 @@ class Dashboard(object):
 		draw.line(((380,10),(380,75)), fill=256, width=0)
 
 		# Info text above speed and direction
-		draw.text((260,5), u'Direction', fill=256, font=self.Ubuntu_R)
+		if self.out_wind_dir == 'origin':
+			draw.text((260,5), u'Origin', fill=256, font=self.Ubuntu_R)
+		else:
+			draw.text((260,5), u'Heading', fill=256, font=self.Ubuntu_R)
+
 		draw.text((400,5), u'Speed', fill=256, font=self.Ubuntu_R)
 
 		# Sigma info
@@ -160,18 +200,23 @@ class Dashboard(object):
 		draw = ImageDraw.Draw(self.current_dash)
 
 		# Direction
-		dir_str = u'%3.0f\u00B0' % self.wind_direction
-		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT)
+		dir_str = u'%3.0f\u00B0' % self.current_direction
+		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT, allign='right')
 
 		# Speed
-		spd_str = u'%3.1f' % self.wind_speed
-		draw.text((400,20), spd_str, fill=256, font=self.WIND_FONT)
+		spd_str = u'%4.1f' % self.current_speed
+		draw.text((400,20), spd_str, fill=256, font=self.WIND_FONT, allign='right')
 		draw.text((500,40), 'm/s', fill=256, font=self.MS_FONT)
 
 	def _draw_wind_arrow(self, arrow_width=3):
+		# Set direction to heading
+		if self.in_wind_dir == 'origin':
+			direction = self.current_direction-180
+		else:
+			direction = self.current_direction
 
 		arrow_len = self.wind_dir_radius*0.9
-		rad_wind_direction = self.wind_direction*pi/180
+		rad_wind_direction = direction*pi/180
 
 		# Arrow tip
 		u = self.wind_dir_center[0] + int(sin(rad_wind_direction)*arrow_len)
@@ -179,8 +224,8 @@ class Dashboard(object):
 
 		# Arrow wings
 		wing_len = arrow_len * 0.85
-		l_wing_wind_direction = (self.wind_direction-5)*pi/180
-		r_wing_wind_direction = (self.wind_direction+5)*pi/180
+		l_wing_wind_direction = (direction-5)*pi/180
+		r_wing_wind_direction = (direction+5)*pi/180
 
 		lu = self.wind_dir_center[0] + int(sin(l_wing_wind_direction)*wing_len)
 		lv = self.wind_dir_center[1] - int(cos(l_wing_wind_direction)*wing_len)
@@ -198,7 +243,13 @@ class Dashboard(object):
 		draw.line([(lu,lv), (u,v)], fill=256, width=arrow_width)
 		draw.line([(ru,rv), (u,v)], fill=256, width=arrow_width)
 
-	def _draw_wind_std_dev(self, values):
+	def _draw_wind_std_dev(self):
+		# Set direction to heading
+		if self.in_wind_dir == 'origin':
+			values = self.wind_direction-180
+		else:
+			values = self.wind_direction
+
 		rad_values = values*np.pi/180
 		u = np.sin(rad_values)
 		v = np.cos(rad_values)
@@ -236,8 +287,8 @@ def make_test_wind_values(num=100):
 	direction[0] = random.randint(0,359)
 
 	for n in range(num-1):
-		speed[n+1] = random.randint(-2,2) + speed[n]
-		direction[n+1] = random.randint(-5,5) + direction[n]
+		speed[n+1] = random.choice((-1,1))*random.random() + speed[n]
+		direction[n+1] = random.randint(-3,3) + direction[n]
 
 		if direction[n+1] > 359:
 			direction[n+1] -= 360
@@ -257,9 +308,9 @@ def make_test_wind_values(num=100):
 if __name__ == '__main__':
 	d = Dashboard()
 
-	'''
 	speed, direction = make_test_wind_values()
 
+	'''
 	d._draw_wind_std_dev(direction)
 
 	d._draw_wind_speed_history()
@@ -271,8 +322,9 @@ if __name__ == '__main__':
 	d._print_wind_values()
 	'''
 
+	d.generate(speed, direction, 120)
 
-	d.empty_dash.show()
+	#d.empty_dash.show()
 	#d.current_dash.show()
 
 	#d.current_dash.save('hei.png')
