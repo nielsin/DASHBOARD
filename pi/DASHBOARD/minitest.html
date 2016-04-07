@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>Demo for Niels</title>
+		<script lang="javascript">
+			function hentVindrettning() {
+				// Genererer en tilfeldig rettning...
+				return Math.floor((Math.random() * 365));
+			}
+
+			// Funksjon for å oppdatere selve datagrunnlaget.
+			function oppdaterVaerStasjon() {
+				var vind = hentVindrettning();
+
+				// Oppdater tekst
+				var tekst = "Random number: " + vind;
+				document.getElementById("tekst").innerHTML = tekst;
+			
+			
+				// Oppdater bilde
+				document.getElementById("bilde").src = "FME_bat.png?" + new Date().getTime();
+			}
+
+			var oppdateringsIntervall = 2 * 1000; // sekunder * 1 sekund i millisekunder
+
+			// Sett en refresh som henter ny vindrettning etter gitt interval
+			setInterval(oppdaterVaerStasjon, oppdateringsIntervall);
+		</script>
+	</head>
+	<body>
+		<img id="bilde" src="data:image/svg+xml;utf8;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iaXNvLTg4NTktMSI/Pgo8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMTguMS4xLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogNi4wMCBCdWlsZCAwKSAgLS0+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczp4bGluaz0iaHR0cDovL3d3dy53My5vcmcvMTk5OS94bGluayIgdmVyc2lvbj0iMS4xIiBpZD0iQ2FwYV8xIiB4PSIwcHgiIHk9IjBweCIgdmlld0JveD0iMCAwIDIwNS44OTggMjA1Ljg5OCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMjA1Ljg5OCAyMDUuODk4OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSIgd2lkdGg9IjY0cHgiIGhlaWdodD0iNjRweCI+CjxnPgoJPGc+CgkJPHBhdGggZD0iTTEyMi4wODksMTE5LjU1MlYxOS4xMzZDMTIyLjA4OSw4LjU4MiwxMTMuNTA3LDAsMTAyLjk0OSwwUzgzLjgxMyw4LjU4Miw4My44MTMsMTkuMTM2djEwMC40MTUgICAgYy0xNS45NCw3LjQzMy0yNi4xNTgsMjMuMzg4LTI2LjE1OCw0MS4wNmMwLDI0Ljk3MywyMC4zMjEsNDUuMjg3LDQ1LjI5NCw0NS4yODdjMjQuOTc3LDAsNDUuMjk0LTIwLjMxNyw0NS4yOTQtNDUuMjg3ICAgIEMxNDguMjQzLDE0Mi45MzksMTM4LjAyNiwxMjYuOTg1LDEyMi4wODksMTE5LjU1MnogTTE0My43ODcsMTYwLjYwOGMwLDIyLjUxOC0xOC4zMiw0MC44MzEtNDAuODM4LDQwLjgzMSAgICBjLTIyLjUxNSwwLTQwLjgzOC0xOC4zMTMtNDAuODM4LTQwLjgzMWMwLTE2LjM3Myw5Ljc0Mi0zMS4xMTgsMjQuODA5LTM3LjU2bDEuMzQ5LTAuNTgzVjE5LjEzNmMwLTguMDk1LDYuNTg1LTE0LjY4LDE0LjY4LTE0LjY4ICAgIHMxNC42OCw2LjU4NSwxNC42OCwxNC42OHYxMDMuMzMybDEuMzU2LDAuNTgzQzEzNC4wNDksMTI5LjQ5LDE0My43ODcsMTQ0LjIzNSwxNDMuNzg3LDE2MC42MDh6IiBmaWxsPSIjMDAwMDAwIi8+CgkJPHBhdGggZD0iTTEwNS4xNzksMTE2LjczOWMwLTEuMjI4LTAuOTk4LTIuMjI2LTIuMjMtMi4yMjZjLTEuMjMxLDAtMi4yMywwLjk5OC0yLjIzLDIuMjI2djE4Ljk5NyAgICBjLTEyLjcyMywxLjEyNy0yMi42OTcsMTEuODAzLTIyLjY5NywyNC44MTZjMCwxMy43NjQsMTEuMTU5LDI0LjkyMywyNC45MjcsMjQuOTIzczI0LjkyNy0xMS4xNTksMjQuOTI3LTI0LjkyMyAgICBjMC0xMy4wMTMtOS45NzQtMjMuNjg1LTIyLjY5Ny0yNC44MTZWMTE2LjczOXogTTEyMy40MiwxNjAuNTQ3YzAsMTEuMjgxLTkuMTgzLDIwLjQ2Ny0yMC40NzEsMjAuNDY3cy0yMC40NjctOS4xODMtMjAuNDY3LTIwLjQ2NyAgICBjMC0xMS4wMjYsOC43OTMtMTkuOTk1LDE5LjcxOS0yMC4zOTJjMC4yNCwwLjA4NiwwLjQ4MywwLjE0NywwLjc0OCwwLjE0N2MwLjI2NSwwLDAuNTA4LTAuMDYxLDAuNzQ4LTAuMTQ3ICAgIEMxMTQuNjI3LDE0MC41NTIsMTIzLjQyLDE0OS41MjEsMTIzLjQyLDE2MC41NDd6IiBmaWxsPSIjMDAwMDAwIi8+Cgk8L2c+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPGc+CjwvZz4KPC9zdmc+Cg==" />
+		<br/>
+		<div id="tekst"></div>
+		<script>
+			// Kjør en refresh når websiden er ferdig lastet.
+			oppdaterVaerStasjon();
+		</script>
+	</body>
+</html>
