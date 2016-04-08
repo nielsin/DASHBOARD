@@ -27,14 +27,16 @@ class Dashboard(object):
 	out_wind_dir	are the output wind direction displayed as
 						'origin'
 						'heading'
+	calibartion   	calibrate wind arrow housing to some direction
 	"""
 
-	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin'):
+	def __init__(self, history=120, array_order='new_last', in_wind_dir='heading', out_wind_dir='heading', calibartion=0):
 		# Save arguments
 		self.history = history
 		self.array_order = array_order
 		self.in_wind_dir = in_wind_dir
 		self.out_wind_dir = out_wind_dir
+		self.calibartion = int(calibartion)
 
 		# Initialize class
 		self._make_empty()
@@ -61,8 +63,8 @@ class Dashboard(object):
 		self._draw_wind_speed_history()			# Not implemented
 		
 
-		print speed_array
-		print direction_array
+		#print speed_array
+		#print direction_array
 
 		# Save figure
 		self.current_dash.save(saveloc)
@@ -104,10 +106,10 @@ class Dashboard(object):
 		# Directions
 		h_mid = (br[0] + tl[0]) / 2
 		v_mid = (br[1] + tl[1]) / 2
-		n = (h_mid, tl[1]-10)
-		s = (h_mid, br[1]+10)
-		w = (tl[0]-10, v_mid)
-		e = (br[0]+10, v_mid)
+		#n = (h_mid, tl[1]-10)
+		#s = (h_mid, br[1]+10)
+		#w = (tl[0]-10, v_mid)
+		#e = (br[0]+10, v_mid)
 
 		# Save wind wind_direction parameters
 		self.wind_dir_center = (h_mid, v_mid)
@@ -117,14 +119,12 @@ class Dashboard(object):
 		# Create draw object
 		draw = ImageDraw.Draw(self.empty_dash)
 
+		'''
 		# Draw cross
 		width = 2
 		draw.line((n,s), fill=256, width=width)
 		draw.line((w,e), fill=256, width=width)
-
-		# Draw circle
-		draw.ellipse([tl, br], fill=0, outline=256)
-
+		
 		# Direction letters
 		draw.text((h_mid-10, tl[1]-26), u'N 0\u00B0', fill=256, font=self.Ubuntu_R)
 		draw.text((h_mid-15, br[1]+10), u'S 180\u00B0', fill=256, font=self.Ubuntu_R)
@@ -132,10 +132,35 @@ class Dashboard(object):
 		draw.text((tl[0]-30,v_mid), u'270\u00B0', fill=256, font=self.Ubuntu_R)
 		draw.text((br[0]+11,v_mid-15), u'E', fill=256, font=self.Ubuntu_R)
 		draw.text((br[0]+5,v_mid), u'90\u00B0', fill=256, font=self.Ubuntu_R)
+		'''
+
+		# Draw cardinal
+		cardinals = ['N', 'E', 'S', 'W']
+		for a in range(4):
+			# Radial coordinates
+			rad_dir = (a*90-self.calibartion)*pi/180
+
+			tick_len = 7
+
+			u = self.wind_dir_center[0] + int(sin(rad_dir)*(self.wind_dir_radius+tick_len))
+			v = self.wind_dir_center[1] - int(cos(rad_dir)*(self.wind_dir_radius+tick_len))
+
+			# Draw tick line
+			draw.line([self.wind_dir_center, (u,v)], fill=256, width=3)
+
+			# Draw text
+			ut = self.wind_dir_center[0] + int(sin(rad_dir)*(self.wind_dir_radius+tick_len+9))
+			vt = self.wind_dir_center[1] - int(cos(rad_dir)*(self.wind_dir_radius+tick_len+9))
+
+			draw.text((ut-5,vt-7), cardinals[a], fill=256, font=self.Ubuntu_R)
+
+		# Draw circle
+		draw.ellipse([tl, br], fill=0, outline=256)
 
 		# Some text
-		draw.text((3,3), u'Wind', fill=256, font=self.Ubuntu_R)
-		draw.text((3,18), u'Heading', fill=256, font=self.Ubuntu_R)
+		#draw.text((3,3), u'Wind', fill=256, font=self.Ubuntu_R)
+		#draw.text((3,18), u'Heading', fill=256, font=self.Ubuntu_R)
+		draw.text((3,3), u'Up=%s\u00B0' % (self.calibartion), fill=256, font=self.Ubuntu_R)
 
 		# Bounding box for wind speed
 		tl = (330, 120)		# top left corner
@@ -200,7 +225,7 @@ class Dashboard(object):
 		draw = ImageDraw.Draw(self.current_dash)
 
 		# Direction
-		dir_str = u'%3.0f\u00B0' % self.current_direction
+		dir_str = u'%3.0f\u00B0' % int(self.current_direction)
 		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT, allign='right')
 
 		# Speed
@@ -214,6 +239,8 @@ class Dashboard(object):
 			direction = self.current_direction-180
 		else:
 			direction = self.current_direction
+
+		direction -= self.calibartion
 
 		arrow_len = self.wind_dir_radius*0.9
 		rad_wind_direction = direction*pi/180
@@ -249,6 +276,8 @@ class Dashboard(object):
 			values = self.wind_direction-180
 		else:
 			values = self.wind_direction
+
+		values -= self.calibartion
 
 		rad_values = values*np.pi/180
 		u = np.sin(rad_values)
@@ -306,7 +335,7 @@ def make_test_wind_values(num=100):
 
 
 if __name__ == '__main__':
-	d = Dashboard()
+	d = Dashboard(calibartion=70)
 
 	speed, direction = make_test_wind_values()
 
@@ -325,6 +354,6 @@ if __name__ == '__main__':
 	d.generate(speed, direction, 120)
 
 	#d.empty_dash.show()
-	#d.current_dash.show()
+	d.current_dash.show()
 
 	#d.current_dash.save('hei.png')
