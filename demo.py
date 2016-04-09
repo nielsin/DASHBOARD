@@ -34,6 +34,7 @@ direction = []
 
 speed.append(random.randint(0,30))
 direction.append(random.randint(0,359))
+#direction.append(1)
 
 outfile = os.path.join(outfolder,'frame_0.png')
 

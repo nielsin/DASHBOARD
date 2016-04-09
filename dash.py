@@ -325,11 +325,20 @@ class Dashboard(object):
 
 		std = [int(atan2(u_max, v_max)*180/pi), int(atan2(u_min, v_min)*180/pi)]
 
+		for i in range(2):
+			if std[i] < 0:
+				std[i] += 360
+
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
 
 		b = self.wind_dir_bounding_box
-		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), min(std)-90, max(std)-90, fill=100, outline=None)
+
+		if (max(std) - min(std)) > 180:
+			draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), max(std)-90, min(std)-90, fill=100, outline=None)
+
+		else:
+			draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), min(std)-90, max(std)-90, fill=100, outline=None)
 
 if __name__ == '__main__':
 	d = Dashboard()
