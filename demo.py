@@ -19,8 +19,8 @@ except:
 num_frames = 180
 calibartion_angle = 0
 timespan = 120
-#wind_display = 'heading'
-wind_display = 'origin'
+wind_display = 'heading'
+#wind_display = 'origin'
 source = r'https://github.com/nielsin/DASHBOARD'
 info_text = r'''
 Simple class for calculating statistics and displaying wind data.

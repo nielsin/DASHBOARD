@@ -8,7 +8,7 @@ http://pillow.readthedocs.org
 '''
 
 from PIL import Image, ImageDraw, ImageFont
-from math import sin, cos, pi
+from math import sin, cos, pi, atan2
 import numpy as np
 
 class Dashboard(object):
@@ -238,9 +238,11 @@ class Dashboard(object):
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
 
+		direction = self.current_direction
+
 		# Make direction a positive number [0,359] and correct for origin/heading
 		if self.in_wind_dir != self.out_wind_dir:
-			direction = self.current_direction - 180
+			direction = direction - 180
 			if direction < 0:
 				direction += 360
 
@@ -306,29 +308,28 @@ class Dashboard(object):
 		u_mean = np.mean(u)
 		v_mean = np.mean(v)
 
-		mean = int(np.arctan(u_mean/v_mean)*180/pi)
-
-		if v_mean<0:
-			mean += 180
-
-		if u_mean<0 and v_mean>0:
-			mean += 360
+		#mean = atan2(u_mean,v_mean)*180/pi
 
 		try:
 			u_std = np.std(u)
 			v_std = np.std(v)
-			std = int(np.arctan(u_std/v_std)*180/pi)
 		except:
-			std = 0
+			u_std = 0
+			v_std = 0
+
+		u_max = u_mean + u_std/u_mean*abs(u_mean)
+		v_max = v_mean + v_std/v_mean*abs(v_mean)
+
+		u_min = u_mean - u_std/u_mean*abs(u_mean)
+		v_min = v_mean - v_std/v_mean*abs(v_mean)
+
+		std = [int(atan2(u_max, v_max)*180/pi), int(atan2(u_min, v_min)*180/pi)]
 
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
 
-		# Draw pie
-		start = mean-std-90
-		end = mean+std-90
 		b = self.wind_dir_bounding_box
-		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), start, end, fill=100, outline=None)
+		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), min(std)-90, max(std)-90, fill=100, outline=None)
 
 if __name__ == '__main__':
 	d = Dashboard()
