@@ -51,18 +51,31 @@ class Dashboard(object):
 	MS_FONT = ImageFont.truetype("fonts/Ubuntu-R.ttf", 30)
 
 	def generate(self, speed_array, direction_array, array_timespan, saveloc='wind.png'):
+		'''
+		Generate image from wind arrays
+
+		Arguments:
+		speed_array 		seconds of history used in calculations
+		direction_array		are new record added to the start or end of array
+							'new_last'
+							'new_first'
+		array_timespan			are the input wind direction values
+							'origin'
+							'heading'
+		out_wind_dir		are the output wind direction displayed as
+							'origin'
+							'heading'
+
+		Keyword arguments:
+		saveloc   			output file
+		'''
+
 		self._clear_current_dash()
-
-		self._set_wind_arrays(speed_array, direction_array, array_timespan)			# Different lengths...
-
+		self._set_wind_arrays(speed_array, direction_array, array_timespan)
 		self._print_wind_values()
-
 		self._draw_wind_std_dev()				
 		self._draw_wind_arrow()
-
-		self._draw_wind_speed_history()			# Not implemented
-
-		# Save figure
+		self._draw_wind_speed_history()
 		self.current_dash.save(saveloc)
 
 	def _clear_current_dash(self):
