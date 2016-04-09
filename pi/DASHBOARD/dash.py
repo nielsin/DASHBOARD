@@ -61,10 +61,6 @@ class Dashboard(object):
 		self._draw_wind_arrow()
 
 		self._draw_wind_speed_history()			# Not implemented
-		
-
-		#print speed_array
-		#print direction_array
 
 		# Save figure
 		self.current_dash.save(saveloc)
@@ -74,20 +70,27 @@ class Dashboard(object):
 
 	def _set_wind_arrays(self, speed, direction, timespan):
 
-		# Add clipping
+		# Flip arrays to new first
+		if self.array_order == 'new_last':
+			speed = speed[::-1]
+			direction = direction[::-1]
 
-		# Get current values and clip arrays
-		if self.array_order == 'new_first':
-			self.current_speed = speed[0]
-			self.current_direction = direction[0]
-		else:
-			self.current_speed = speed[-1]
-			self.current_direction = direction[-1]
+		self.current_speed = speed[0]
+		self.current_direction = direction[0]
 
+		# Make direction a positive number [0,359]
 		if self.in_wind_dir != self.out_wind_dir:
 			self.current_direction -= 180
 			if self.current_direction < 0:
 				self.current_direction += 360
+
+		# Clip arrays if they are too long
+		if timespan > self.history:
+			new_len = len(speed)*self.history/timespan
+			speed = speed[:new_len]
+			new_len = len(direction)*self.history/timespan
+			direction = direction[:new_len]
+			timespan = self.history
 
 		self.wind_timespan = timespan
 		self.wind_direction = direction
@@ -214,11 +217,44 @@ class Dashboard(object):
 
 	def _draw_wind_speed_history(self):
 
+		# Wind speed bounding box
 		tl = self.wind_speed_bounding_box[0]
 		br = self.wind_speed_bounding_box[1]
 
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
+
+		# Write statistics
+		spacing = 28
+		offset = 85
+		max_val = self.wind_speed.max()
+		min_val = self.wind_speed.min()
+
+		draw.text((tl[0]-offset,tl[1]+spacing*0), 'Max: %3.1f' % (max_val), fill=256, font=self.Ubuntu_R)
+		draw.text((tl[0]-offset,tl[1]+spacing*1), 'Mean: %3.1f' % (self.wind_speed.mean()), fill=256, font=self.Ubuntu_R)
+		draw.text((tl[0]-offset,tl[1]+spacing*2), u'1\u03C3: %3.1f' % (self.wind_speed.std()), fill=256, font=self.Ubuntu_R)
+		draw.text((tl[0]-offset,tl[1]+spacing*3), 'Min: %3.1f' % (min_val), fill=256, font=self.Ubuntu_R)
+
+		bins = 20
+		x_array = np.linspace(0, self.wind_timespan, len(self.wind_speed))
+		x_print = np.linspace(0, self.history, bins)
+
+		hist_vals = np.interp(x_print, x_array, self.wind_speed)
+
+		val_bins = bins * self.wind_timespan / self.history
+
+		u_range = (br[0] - tl[0]) + 9
+		v_range = (br[1] - tl[1]) - 4
+		v_min = br[1] - 2
+		v_val = max_val - min_val
+
+		for b in range(bins):
+			u = ((b*u_range/bins) + tl[0]) + 2
+
+			y_max = (hist_vals[b] - min_val) / v_val * v_range
+
+			if b <= val_bins:
+				draw.line([(u,v_min), (u,v_min-y_max)], fill=100, width=5)
 			
 	def _print_wind_values(self):
 		# Create draw object
@@ -308,7 +344,11 @@ class Dashboard(object):
 		b = self.wind_dir_bounding_box
 		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), start, end, fill=30, outline=None)
 
-def make_test_wind_values(num=100):
+if __name__ == '__main__':
+	d = Dashboard(calibartion=70)
+
+	num=500
+
 	speed = np.zeros(num)
 	direction = np.zeros(num)
 
@@ -331,29 +371,11 @@ def make_test_wind_values(num=100):
 		elif speed[n+1] < 0:
 			speed[n+1] = 0
 
-	return speed, direction
+		outfile = 'test/frame_%s.png' % (n)
 
-
-if __name__ == '__main__':
-	d = Dashboard(calibartion=70)
-
-	speed, direction = make_test_wind_values()
-
-	'''
-	d._draw_wind_std_dev(direction)
-
-	d._draw_wind_speed_history()
-
-	d._set_wind(speed=speed[-1], direction=direction[-1])
-
-	d._draw_wind_arrow()
-
-	d._print_wind_values()
-	'''
-
-	d.generate(speed, direction, 120)
+		d.generate(speed, direction, n+1, saveloc=outfile)
 
 	#d.empty_dash.show()
-	d.current_dash.show()
+	#d.current_dash.show()
 
 	#d.current_dash.save('hei.png')
