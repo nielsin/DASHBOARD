@@ -83,12 +83,6 @@ class Dashboard(object):
 		self.current_speed = speed[0]
 		self.current_direction = direction[0]
 
-		# Make direction a positive number [0,359]
-		if self.in_wind_dir != self.out_wind_dir:
-			self.current_direction -= 180
-			if self.current_direction < 0:
-				self.current_direction += 360
-
 		# Clip arrays if they are too long
 		if timespan > self.history:
 			new_len = len(speed)*self.history/timespan
@@ -244,8 +238,14 @@ class Dashboard(object):
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
 
+		# Make direction a positive number [0,359] and correct for origin/heading
+		if self.in_wind_dir != self.out_wind_dir:
+			direction = self.current_direction - 180
+			if direction < 0:
+				direction += 360
+
 		# Direction
-		dir_str = u'%3.0f\u00B0' % int(self.current_direction)
+		dir_str = u'%3.0f\u00B0' % int(direction)
 		draw.text((260,20), dir_str, fill=256, font=self.WIND_FONT, allign='right')
 
 		# Speed
