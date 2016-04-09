@@ -10,7 +10,6 @@ http://pillow.readthedocs.org
 from PIL import Image, ImageDraw, ImageFont
 from math import sin, cos, pi
 import numpy as np
-import random
 
 class Dashboard(object):
 	"""
@@ -55,16 +54,9 @@ class Dashboard(object):
 		Generate image from wind arrays
 
 		Arguments:
-		speed_array 		seconds of history used in calculations
-		direction_array		are new record added to the start or end of array
-							'new_last'
-							'new_first'
-		array_timespan			are the input wind direction values
-							'origin'
-							'heading'
-		out_wind_dir		are the output wind direction displayed as
-							'origin'
-							'heading'
+		speed_array 		numpy array containing wind speed measurements 
+		direction_array		numpy array containing wind direction measurements
+		array_timespan		timespan of array in seconds
 
 		Keyword arguments:
 		saveloc   			output file
@@ -122,10 +114,6 @@ class Dashboard(object):
 		# Directions
 		h_mid = (br[0] + tl[0]) / 2
 		v_mid = (br[1] + tl[1]) / 2
-		#n = (h_mid, tl[1]-10)
-		#s = (h_mid, br[1]+10)
-		#w = (tl[0]-10, v_mid)
-		#e = (br[0]+10, v_mid)
 
 		# Save wind wind_direction parameters
 		self.wind_dir_center = (h_mid, v_mid)
@@ -134,21 +122,6 @@ class Dashboard(object):
 
 		# Create draw object
 		draw = ImageDraw.Draw(self.empty_dash)
-
-		'''
-		# Draw cross
-		width = 2
-		draw.line((n,s), fill=256, width=width)
-		draw.line((w,e), fill=256, width=width)
-		
-		# Direction letters
-		draw.text((h_mid-10, tl[1]-26), u'N 0\u00B0', fill=256, font=self.Ubuntu_R)
-		draw.text((h_mid-15, br[1]+10), u'S 180\u00B0', fill=256, font=self.Ubuntu_R)
-		draw.text((tl[0]-25,v_mid-15), u'W', fill=256, font=self.Ubuntu_R)
-		draw.text((tl[0]-30,v_mid), u'270\u00B0', fill=256, font=self.Ubuntu_R)
-		draw.text((br[0]+11,v_mid-15), u'E', fill=256, font=self.Ubuntu_R)
-		draw.text((br[0]+5,v_mid), u'90\u00B0', fill=256, font=self.Ubuntu_R)
-		'''
 
 		# Draw cardinal
 		cardinals = ['N', 'E', 'S', 'W']
@@ -173,9 +146,7 @@ class Dashboard(object):
 		# Draw circle
 		draw.ellipse([tl, br], fill=0, outline=256)
 
-		# Some text
-		#draw.text((3,3), u'Wind', fill=256, font=self.Ubuntu_R)
-		#draw.text((3,18), u'Heading', fill=256, font=self.Ubuntu_R)
+		# Calibration info
 		draw.text((3,3), u'Up=%s\u00B0' % (self.calibartion), fill=256, font=self.Ubuntu_R)
 
 		# Bounding box for wind speed
@@ -225,8 +196,8 @@ class Dashboard(object):
 		draw.text((400,5), u'Speed', fill=256, font=self.Ubuntu_R)
 
 		# Sigma info
-		draw.text((3,210), u'Gray pie', fill=80, font=self.Ubuntu_R)
-		draw.text((3,230), u'1\u03C3 (68%)', fill=80, font=self.Ubuntu_R)
+		draw.text((3,210), u'Gray pie', fill=100, font=self.Ubuntu_R)
+		draw.text((3,230), u'1\u03C3 (68%)', fill=100, font=self.Ubuntu_R)
 
 	def _draw_wind_speed_history(self):
 
@@ -248,7 +219,7 @@ class Dashboard(object):
 		draw.text((tl[0]-offset,tl[1]+spacing*2), u'1\u03C3: %3.1f' % (self.wind_speed.std()), fill=256, font=self.Ubuntu_R)
 		draw.text((tl[0]-offset,tl[1]+spacing*3), 'Min: %3.1f' % (min_val), fill=256, font=self.Ubuntu_R)
 
-		bins = 20
+		bins = 50
 		x_array = np.linspace(0, self.wind_timespan, len(self.wind_speed))
 		x_print = np.linspace(0, self.history, bins)
 
@@ -256,7 +227,7 @@ class Dashboard(object):
 
 		val_bins = bins * self.wind_timespan / self.history
 
-		u_range = (br[0] - tl[0]) + 9
+		u_range = (br[0] - tl[0])
 		v_range = (br[1] - tl[1]) - 4
 		v_min = br[1] - 2
 		v_val = max_val - min_val
@@ -343,10 +314,12 @@ class Dashboard(object):
 		if u_mean<0 and v_mean>0:
 			mean += 360
 
-		u_std = np.std(u)
-		v_std = np.std(v)
-
-		std = int(np.arctan(u_std/v_std)*180/pi)
+		try:
+			u_std = np.std(u)
+			v_std = np.std(v)
+			std = int(np.arctan(u_std/v_std)*180/pi)
+		except:
+			std = 0
 
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)
@@ -355,40 +328,9 @@ class Dashboard(object):
 		start = mean-std-90
 		end = mean+std-90
 		b = self.wind_dir_bounding_box
-		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), start, end, fill=30, outline=None)
+		draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), start, end, fill=100, outline=None)
 
 if __name__ == '__main__':
-	d = Dashboard(calibartion=70)
+	d = Dashboard()
 
-	num=500
-
-	speed = np.zeros(num)
-	direction = np.zeros(num)
-
-	speed[0] = random.randint(0,30)
-	direction[0] = random.randint(0,359)
-
-	for n in range(num-1):
-		speed[n+1] = random.choice((-1,1))*random.random() + speed[n]
-		direction[n+1] = random.randint(-3,3) + direction[n]
-
-		if direction[n+1] > 359:
-			direction[n+1] -= 360
-
-		elif direction[n+1] < 0:
-			direction[n+1] += 360
-
-		if speed[n+1] > 30:
-			speed[n+1] = 30
-
-		elif speed[n+1] < 0:
-			speed[n+1] = 0
-
-		outfile = 'test/frame_%s.png' % (n)
-
-		d.generate(speed, direction, n+1, saveloc=outfile)
-
-	#d.empty_dash.show()
-	#d.current_dash.show()
-
-	#d.current_dash.save('hei.png')
+	d.empty_dash.show()
