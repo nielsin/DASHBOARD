@@ -45,7 +45,7 @@ d.generate(speed_array, direction_array, 1, saveloc=outfile)
 
 for n in range(num_frames-1):
 	speed.append(random.choice((-1,1))*random.random() + speed[n])
-	direction.append(random.randint(-5,5) + direction[n])
+	direction.append(random.randint(-10,10) + direction[n])
 
 	if direction[n+1] > 359:
 		direction[n+1] -= 360

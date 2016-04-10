@@ -299,8 +299,6 @@ class Dashboard(object):
 		else:
 			values = self.wind_direction
 
-		values -= self.calibartion
-
 		rad_values = values*np.pi/180
 		u = np.sin(rad_values)
 		v = np.cos(rad_values)
@@ -326,6 +324,7 @@ class Dashboard(object):
 		std = [int(atan2(u_max, v_max)*180/pi), int(atan2(u_min, v_min)*180/pi)]
 
 		for i in range(2):
+			std[i] -= self.calibartion
 			if std[i] < 0:
 				std[i] += 360
 
