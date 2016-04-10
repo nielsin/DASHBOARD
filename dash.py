@@ -65,7 +65,8 @@ class Dashboard(object):
 		self._clear_current_dash()
 		self._set_wind_arrays(speed_array, direction_array, array_timespan)
 		self._print_wind_values()
-		self._draw_wind_std_dev()				
+		#self._draw_wind_std_dev()
+		self._draw_wind_dir_max_min()			
 		self._draw_wind_arrow()
 		self._draw_wind_speed_history()
 		self.current_dash.save(saveloc)
@@ -190,8 +191,8 @@ class Dashboard(object):
 		draw.text((400,5), u'Speed', fill=256, font=self.Ubuntu_R)
 
 		# Sigma info
-		draw.text((3,210), u'Gray pie', fill=100, font=self.Ubuntu_R)
-		draw.text((3,230), u'1\u03C3 (68%)', fill=100, font=self.Ubuntu_R)
+		draw.text((3,210), u'History', fill=100, font=self.Ubuntu_R)
+		draw.text((3,230), u'%ss' % (self.history), fill=100, font=self.Ubuntu_R)
 
 	def _draw_wind_speed_history(self):
 
@@ -292,6 +293,7 @@ class Dashboard(object):
 		draw.line([(lu,lv), (u,v)], fill=256, width=arrow_width)
 		draw.line([(ru,rv), (u,v)], fill=256, width=arrow_width)
 
+	'''
 	def _draw_wind_std_dev(self):
 		# Set direction to heading
 		if self.in_wind_dir == 'origin':
@@ -338,6 +340,31 @@ class Dashboard(object):
 
 		else:
 			draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), min(std)-90, max(std)-90, fill=100, outline=None)
+	'''
+
+	def _draw_wind_dir_max_min(self):
+		# Set direction to heading
+		if self.in_wind_dir == 'origin':
+			values = self.wind_direction-180
+		else:
+			values = self.wind_direction
+
+		values -= self.calibartion
+
+		# Create draw object
+		draw = ImageDraw.Draw(self.current_dash)
+
+		for direction in values:
+
+			arrow_len = self.wind_dir_radius*0.9
+			rad_wind_direction = direction*pi/180
+
+			# Arrow tip
+			u = self.wind_dir_center[0] + int(sin(rad_wind_direction)*arrow_len)
+			v = self.wind_dir_center[1] - int(cos(rad_wind_direction)*arrow_len)
+
+			# Draw arrow line
+			draw.line([self.wind_dir_center, (u,v)], fill=50, width=3)
 
 if __name__ == '__main__':
 	d = Dashboard()
