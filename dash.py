@@ -65,8 +65,7 @@ class Dashboard(object):
 		self._clear_current_dash()
 		self._set_wind_arrays(speed_array, direction_array, array_timespan)
 		self._print_wind_values()
-		#self._draw_wind_std_dev()
-		self._draw_wind_dir_max_min()			
+		self._draw_wind_dir_history()			
 		self._draw_wind_arrow()
 		self._draw_wind_speed_history()
 		self.current_dash.save(saveloc)
@@ -214,26 +213,21 @@ class Dashboard(object):
 		draw.text((tl[0]-offset,tl[1]+spacing*2), u'1\u03C3: %3.1f' % (self.wind_speed.std()), fill=256, font=self.Ubuntu_R)
 		draw.text((tl[0]-offset,tl[1]+spacing*3), 'Min: %3.1f' % (min_val), fill=256, font=self.Ubuntu_R)
 
-		bins = 50
-		x_array = np.linspace(0, self.wind_timespan, len(self.wind_speed))
-		x_print = np.linspace(0, self.history, bins)
-
-		hist_vals = np.interp(x_print, x_array, self.wind_speed)
-
-		val_bins = bins * self.wind_timespan / self.history
+		# Drawing all values
+		array_len = len(self.wind_speed)
+		bins = array_len * self.history / self.wind_timespan
 
 		u_range = (br[0] - tl[0])
 		v_range = (br[1] - tl[1]) - 4
 		v_min = br[1] - 2
 		v_val = max_val - min_val
 
-		for b in range(bins):
-			u = ((b*u_range/bins) + tl[0]) + 2
+		for b in range(array_len):
+			u = ((b*u_range/bins) + tl[0]) + 1
 
-			y_max = (hist_vals[b] - min_val) / v_val * v_range
+			y_max = (self.wind_speed[b] - min_val) / v_val * v_range
 
-			if b <= val_bins:
-				draw.line([(u,v_min), (u,v_min-y_max)], fill=100, width=5)
+			draw.line([(u,v_min), (u,v_min-y_max)], fill=100, width=3)
 			
 	def _print_wind_values(self):
 		# Create draw object
@@ -293,56 +287,7 @@ class Dashboard(object):
 		draw.line([(lu,lv), (u,v)], fill=256, width=arrow_width)
 		draw.line([(ru,rv), (u,v)], fill=256, width=arrow_width)
 
-	'''
-	def _draw_wind_std_dev(self):
-		# Set direction to heading
-		if self.in_wind_dir == 'origin':
-			values = self.wind_direction-180
-		else:
-			values = self.wind_direction
-
-		rad_values = values*np.pi/180
-		u = np.sin(rad_values)
-		v = np.cos(rad_values)
-
-		u_mean = np.mean(u)
-		v_mean = np.mean(v)
-
-		#mean = atan2(u_mean,v_mean)*180/pi
-
-		try:
-			u_std = np.std(u)
-			v_std = np.std(v)
-		except:
-			u_std = 0
-			v_std = 0
-
-		u_max = u_mean + u_std/u_mean*abs(u_mean)
-		v_max = v_mean + v_std/v_mean*abs(v_mean)
-
-		u_min = u_mean - u_std/u_mean*abs(u_mean)
-		v_min = v_mean - v_std/v_mean*abs(v_mean)
-
-		std = [int(atan2(u_max, v_max)*180/pi), int(atan2(u_min, v_min)*180/pi)]
-
-		for i in range(2):
-			std[i] -= self.calibartion
-			if std[i] < 0:
-				std[i] += 360
-
-		# Create draw object
-		draw = ImageDraw.Draw(self.current_dash)
-
-		b = self.wind_dir_bounding_box
-
-		if (max(std) - min(std)) > 180:
-			draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), max(std)-90, min(std)-90, fill=100, outline=None)
-
-		else:
-			draw.pieslice((b[0][0]+5, b[0][1]+5 ,b[1][0]-5 ,b[1][1]-5), min(std)-90, max(std)-90, fill=100, outline=None)
-	'''
-
-	def _draw_wind_dir_max_min(self):
+	def _draw_wind_dir_history(self):
 		# Set direction to heading
 		if self.in_wind_dir == 'origin':
 			values = self.wind_direction-180
