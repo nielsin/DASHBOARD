@@ -26,16 +26,16 @@ class Dashboard(object):
 	out_wind_dir	are the output wind direction displayed as
 						'origin'
 						'heading'
-	calibartion   	calibrate wind arrow housing to some direction
+	calibration   	calibrate wind arrow housing to some direction
 	"""
 
-	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin', calibartion=0):
+	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin', calibration=0):
 		# Save arguments
 		self.history = history
 		self.array_order = array_order
 		self.in_wind_dir = in_wind_dir
 		self.out_wind_dir = out_wind_dir
-		self.calibartion = int(calibartion)
+		self.calibration = int(calibration)
 
 		# Initialize class
 		self._make_empty()
@@ -121,7 +121,7 @@ class Dashboard(object):
 		cardinals = ['N', 'E', 'S', 'W']
 		for a in range(4):
 			# Radial coordinates
-			rad_dir = (a*90-self.calibartion)*pi/180
+			rad_dir = (a*90-self.calibration)*pi/180
 
 			tick_len = 7
 
@@ -141,7 +141,7 @@ class Dashboard(object):
 		draw.ellipse([tl, br], fill=0, outline=256)
 
 		# Calibration info
-		draw.text((3,3), u'Up=%s\u00B0' % (self.calibartion), fill=256, font=self.Ubuntu_R)
+		draw.text((3,3), u'Up=%s\u00B0' % (self.calibration), fill=256, font=self.Ubuntu_R)
 
 		# Bounding box for wind speed
 		tl = (330, 120)		# top left corner
@@ -257,7 +257,7 @@ class Dashboard(object):
 		else:
 			direction = self.current_direction
 
-		direction -= self.calibartion
+		direction -= self.calibration
 
 		arrow_len = self.wind_dir_radius*0.9
 		rad_wind_direction = direction*pi/180
@@ -303,7 +303,7 @@ class Dashboard(object):
 		else:
 			values = self.wind_direction
 
-		values -= self.calibartion
+		values -= self.calibration
 
 		# Create draw object
 		draw = ImageDraw.Draw(self.current_dash)

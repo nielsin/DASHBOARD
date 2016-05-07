@@ -17,7 +17,7 @@ except:
 
 # Demo parameters
 num_frames = 180
-calibartion_angle = 125
+calibration_angle = 125
 timespan = 120
 #wind_display = 'heading'
 wind_display = 'origin'
@@ -27,7 +27,7 @@ Simple class for calculating statistics and displaying wind data.
 '''
 
 # Create frames
-d = Dashboard(calibartion=calibartion_angle, out_wind_dir=wind_display, history=timespan)
+d = Dashboard(calibration=calibration_angle, out_wind_dir=wind_display, history=timespan)
 
 speed = []
 direction = []
@@ -100,7 +100,7 @@ html_text = '''<html>
 		<br>
 		Wind display mode: %s
 		<br>
-		Calibartion angle: %s
+		Calibration angle: %s
 		<br>
 		<br>
 		%s
@@ -113,7 +113,7 @@ html_text = '''<html>
 		</script>
 	</body>
 </html>
-''' % (num_frames, num_frames, wind_display, calibartion_angle, info_text, source, source)
+''' % (num_frames, num_frames, wind_display, calibration_angle, info_text, source, source)
 
 html_path = os.path.join(outfolder, html_file)
 with open(html_path, 'w') as outfile:
