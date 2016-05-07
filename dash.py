@@ -29,7 +29,7 @@ class Dashboard(object):
 	calibartion   	calibrate wind arrow housing to some direction
 	"""
 
-	def __init__(self, history=120, array_order='new_last', in_wind_dir='heading', out_wind_dir='heading', calibartion=0):
+	def __init__(self, history=120, array_order='new_last', in_wind_dir='origin', out_wind_dir='origin', calibartion=0):
 		# Save arguments
 		self.history = history
 		self.array_order = array_order
@@ -252,7 +252,7 @@ class Dashboard(object):
 
 	def _draw_wind_arrow(self, arrow_width=3):
 		# Set direction to heading
-		if self.in_wind_dir == 'origin':
+		if self.in_wind_dir != self.out_wind_dir:
 			direction = self.current_direction-180
 		else:
 			direction = self.current_direction
@@ -267,9 +267,18 @@ class Dashboard(object):
 		v = self.wind_dir_center[1] - int(cos(rad_wind_direction)*arrow_len)
 
 		# Arrow wings
-		wing_len = arrow_len * 0.85
-		l_wing_wind_direction = (direction-5)*pi/180
-		r_wing_wind_direction = (direction+5)*pi/180
+		if self.out_wind_dir == 'heading':
+			wing_len = arrow_len * 0.85
+			l_wing_wind_direction = (direction-5)*pi/180
+			r_wing_wind_direction = (direction+5)*pi/180
+			wu = u
+			wv = v
+		else:
+			wing_len = arrow_len * 0.2
+			l_wing_wind_direction = (direction-25)*pi/180
+			r_wing_wind_direction = (direction+25)*pi/180
+			wu = self.wind_dir_center[0]
+			wv = self.wind_dir_center[1]
 
 		lu = self.wind_dir_center[0] + int(sin(l_wing_wind_direction)*wing_len)
 		lv = self.wind_dir_center[1] - int(cos(l_wing_wind_direction)*wing_len)
@@ -283,13 +292,13 @@ class Dashboard(object):
 		# Draw arrow line
 		draw.line([self.wind_dir_center, (u,v)], fill=256, width=arrow_width)
 
-		# Draw arrow heads
-		draw.line([(lu,lv), (u,v)], fill=256, width=arrow_width)
-		draw.line([(ru,rv), (u,v)], fill=256, width=arrow_width)
+		# Draw arrow wings
+		draw.line([(lu,lv), (wu,wv)], fill=256, width=arrow_width)
+		draw.line([(ru,rv), (wu,wv)], fill=256, width=arrow_width)
 
 	def _draw_wind_dir_history(self):
 		# Set direction to heading
-		if self.in_wind_dir == 'origin':
+		if self.in_wind_dir != self.out_wind_dir:
 			values = self.wind_direction-180
 		else:
 			values = self.wind_direction

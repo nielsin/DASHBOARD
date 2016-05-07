@@ -1,6 +1,8 @@
 # DASHBOARD
 ![Example image](sample.png)
 
+![Example image](sample2.png)
+
 Simple class for calculating statistics and displaying wind data.
 
 ## System
